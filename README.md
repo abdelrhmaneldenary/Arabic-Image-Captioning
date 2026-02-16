@@ -15,7 +15,7 @@ I have evolved this system through two major architectural generations, moving f
 
 ### 🌟 Try It Live
 Click the badge above or visit the link below to test the model:
-👉 **[Live Demo on Hugging Face](https://huggingface.co/spaces/Abdelrhman/arabic-image-captioning)**
+👉 **[Live Demo on Hugging Face](https://huggingface.co/spaces/Abdlerhman/VLM)**
 
 ---
 

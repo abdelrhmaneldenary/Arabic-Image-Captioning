@@ -6,73 +6,78 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-High%20Performance-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **"Bridging the gap between Computer Vision and Arabic NLP."**
+> **"Bridging the gap between Computer Vision and Arabic NLP: From LSTMs to Transformers."**
 
 ## 🚀 Project Overview
-This project is a production-ready **Deep Learning system** capable of generating descriptive, grammatically correct **Arabic captions** for images.
+This project is a production-ready **Deep Learning system** capable of generating descriptive, grammatically correct **Arabic captions** for images. 
 
-Unlike standard English captioning models, this project tackles the complexity of the **Arabic language** (rich morphology, complex grammar) using a custom **Attention-based Encoder-Decoder architecture**. It is fully containerized with **Docker** and deployed live on **Hugging Face Spaces**.
+I have evolved this system through two major architectural generations, moving from traditional CNN-RNN structures to a state-of-the-art **Vision Transformer (ViT) + GPT-2** pipeline. This progress reflects my commitment to engineering excellence and staying at the forefront of AI research.
 
 ### 🌟 Try It Live
-Click the badge above or visit the link below to test the model with your own images:
-👉 **[Live Demo on Hugging Face](https://abdlerhman-arabic-image-captioning.hf.space)**
+Click the badge above or visit the link below to test the model:
+👉 **[Live Demo on Hugging Face](https://huggingface.co/spaces/Abdelrhman/arabic-image-captioning)**
 
 ---
 
-## 🏆 Performance & The "Flex"
-This model is inspired by the seminal paper *"Show, Attend and Tell"* (Xu et al.), but engineered specifically for a low-resource Arabic setting.
+## 🏆 Performance & Architectural Evolution
+By pivoting to a Transformer architecture and scaling the training data through a localized **Flickr30k-Arabic** corpus, I achieved a massive leap in performance.
 
-| Metric | Original Paper (English) | **My Model (Arabic)** | **Why This Matters?** |
+| Metric | v1.0 (CNN-RNN) | **v2.0 (Transformer)** | **Improvement** |
 | :--- | :--- | :--- | :--- |
-| **Dataset** | MS-COCO (~120,000 Images) | **Flickr8k (~8,000 Images)** | I achieved comparable generalization with **15x less data**. |
-| **Language** | English (Low Morphology) | **Arabic (High Morphology)** | Successfully handled complex tokenization and grammar. |
-| **BLEU-4** | ~19.0 | **14.09** | **State-of-the-Art performance** relative to data scarcity and language difficulty. |
-
-**Key Achievement:** achieving a BLEU-4 score of **14.09** on a dataset as small as Flickr8k is significantly more challenging than higher scores on massive datasets like COCO. It demonstrates robust feature extraction and effective regularization to prevent overfitting.
+| **Visual Encoder** | ResNet-101 (CNN) | **ViT-Base (Transformer)** | Better global context |
+| **Language Decoder** | LSTM (RNN) | **AraGPT2 (Transformer)** | Pre-trained Arabic fluency |
+| **Dataset** | Flickr8k (~8,000) | **Flickr30k + 8k (~39,000)** | 5x Data Diversity |
+| **BLEU-4 Score** | 14.09 | **25.00** | **+77% Accuracy Gain** |
 
 ---
 
-## 🧠 Technical Architecture
-I engineered a custom pipeline that marries State-of-the-Art Computer Vision with Natural Language Processing:
+## 🧠 Technical Architecture (v2.0 - Current)
+The current system utilizes a **VisionEncoderDecoder** framework, merging high-fidelity visual features with generative linguistic knowledge.
 
-### 1. Visual Encoder (The "Eyes")
-* **Architecture:** **ResNet-101** (Pre-trained on ImageNet).
-* **Modification:** Removed the final classification layers and froze the early convolutional blocks to retain low-level feature detection.
-* **Feature Extraction:** Instead of pooling to a single vector, I extract a **14x14 spatial grid** of features. This preserves spatial awareness, allowing the decoder to "look" at different regions of the image.
 
-### 2. Language Decoder (The "Brain")
-* **Core:** **LSTM** (Long Short-Term Memory) network with **Soft Attention**.
-* **Attention Mechanism:** At every time step, the model calculates an "alpha" map, focusing on specific pixels (e.g., the ball) when generating the corresponding word ("كرة").
-* **Tokenizer:** Custom **BPE (Byte Pair Encoding)** using **AraBERT** (bert-base-arabertv2) to handle Arabic prefixes/suffixes superior to standard whitespace splitting.
 
-### 3. Inference Engineering (The "Secret Sauce")
-Standard Beam Search often produces "safe" but generic captions (e.g., "A group of people"). To solve this, I engineered a custom inference pipeline:
-* **Penalized Beam Search:** Implemented a length penalty ($\alpha$) to punish short, vague sentences during validation.
-* **Nucleus Sampling (Top-K):** Used in the deployed API to introduce controlled randomness, generating more "human-like" and descriptive captions compared to standard greedy decoding.
+### 1. Visual Encoder: Vision Transformer (ViT)
+* **Architecture:** `google/vit-base-patch16-224-in21k`.
+* **Mechanism:** Instead of traditional convolutions, the image is flattened into fixed-size patches and processed via **Self-Attention**, capturing long-range spatial dependencies that CNNs often miss.
+
+### 2. Language Decoder: AraGPT2
+* **Architecture:** `aubmindlab/aragpt2-base`.
+* **BOS Injection:** I engineered a custom tokenization bridge by injecting a **Beginning-of-Sentence [BOS]** token, solving the "cold start" issue common in GPT-based decoders for multimodal tasks.
+
+### 3. Training & Optimization
+* **Warm-Start Fine-Tuning:** Initialized with pre-trained weights to leverage prior knowledge of objects and Arabic grammar.
+* **Squeeze Phase:** Implemented a two-stage training schedule, dropping the Learning Rate by 10x in the final epochs to ensure precise convergence.
+* **Beam Search (k=5):** Used during inference to explore multiple word sequences, ensuring the final caption is the most probable and descriptive.
+
+---
+
+## 📜 Legacy Architecture (v1.0)
+For transparency and educational purposes, the initial version of this project used:
+* **Encoder:** ResNet-101 with the final layers removed to extract a 14x14 spatial feature grid.
+* **Decoder:** A custom LSTM with **Soft Attention** (Show, Attend, and Tell).
+* **Tokenizer:** Byte Pair Encoding (BPE) via AraBERT.
 
 ---
 
 ## 🛠️ Tech Stack & Tools
-* **Deep Learning:** PyTorch, TorchVision
-* **NLP:** Transformers (Hugging Face), NLTK, AraBERT
-* **Backend API:** FastAPI (Asynchronous, High-Performance)
-* **Deployment:** Docker, Hugging Face Spaces (Cloud)
-* **DevOps:** Git, CI/CD concepts
+* **Deep Learning:** PyTorch, Hugging Face Transformers
+* **Computer Vision:** ViT, ResNet
+* **NLP:** AraGPT2, AraBERT, NLTK, MarianMT (for data translation)
+* **Backend:** FastAPI (Asynchronous API)
+* **Deployment:** Docker, Hugging Face Spaces
 
 ---
 
 ## 💻 How to Run Locally
 
 ### Option 1: Using Docker (Recommended)
-Run the entire application in an isolated container without installing Python libraries.
-
 ```bash
 # 1. Clone the repository
 git clone [https://github.com/Abdelrhman/Arabic-Image-Captioning.git](https://github.com/Abdelrhman/Arabic-Image-Captioning.git)
 cd Arabic-Image-Captioning
 
 # 2. Build the Docker Image
-docker build -t arabic-caption-app .
+docker build -t arabic-caption-v2 .
 
 # 3. Run the Container
-docker run -p 7860:7860 arabic-caption-app
+docker run -p 8000:8000 arabic-caption-v2
